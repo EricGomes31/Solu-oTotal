@@ -8,7 +8,6 @@
 </head>
 <body>
 
-    <!-- ======== TELA DE LOGIN ======== -->
     <div id="login-container" class="container">
         <div class="header">
             <h1>Bem-vindo</h1>
@@ -30,7 +29,7 @@
         </form>
     </div>
 
-   <script>
+<script>
 // =============================
 // LOGIN SIMPLES COM LOCALSTORAGE
 // =============================
@@ -49,19 +48,23 @@ const loginForm = document.getElementById("login-form");
 loginForm.addEventListener("submit", function(e) {
     e.preventDefault();
 
-    const email = document.getElementById("login-email").value;
+    const email = document.getElementById("login-email").value.trim();
     const senha = document.getElementById("login-password").value;
 
     const savedUser = JSON.parse(localStorage.getItem("usuario"));
 
     if (email === savedUser.email && senha === savedUser.senha) {
-        alert("Login realizado com sucesso!");
+        // marca como logado e salva email do usuário
+        localStorage.setItem("logado", "true");
+        localStorage.setItem("usuarioLogado", email);
 
-        // REDIRECIONAMENTO CORRETO COM BASE NA ESTRUTURA DAS PASTAS
+        // redireciona para a lista
         window.location.href = "../lista/lista.html";
-
     } else {
         alert("Email ou senha incorretos.");
     }
 });
 </script>
+
+</body>
+</html>

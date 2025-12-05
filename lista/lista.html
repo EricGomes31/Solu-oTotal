@@ -20,7 +20,10 @@
   <div class="container container-box mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2>Lista de Colaboradores</h2>
-      <a href="../cadastro/cadastro.html" class="btn btn-primary">+ Novo Colaborador</a>
+      <div class="d-flex gap-2">
+        <a href="../pagina-registro/cadastro.html" class="btn btn-primary">+ Novo Colaborador</a>
+        <button class="btn btn-outline-danger" id="btnLogout">Sair</button>
+      </div>
     </div>
 
     <!-- Busca -->
@@ -39,7 +42,7 @@
             <th onclick="ordenar('contratacao')">Contratação</th>
             <th onclick="ordenar('setor')">Setor</th>
             <th onclick="ordenar('carga')">Carga Horária</th>
-            <th onclick="ordenar('ativo')">Ativo</th>
+            <th onclick="ordenar('status')">Status</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -66,7 +69,7 @@
           <p><strong>Contratação:</strong> <span id="statusContratacao"></span></p>
           <p><strong>Setor:</strong> <span id="statusSetor"></span></p>
           <p><strong>Carga Horária:</strong> <span id="statusCarga"></span></p>
-          <p><strong>Ativo:</strong> <span id="statusSituacao"></span></p>
+          <p><strong>Status:</strong> <span id="statusSituacao"></span></p>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -79,11 +82,24 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
+  // ====== VERIFICAÇÃO DE LOGIN ======
+  if (!localStorage.getItem("logado") || localStorage.getItem("logado") !== "true") {
+    // não está logado => volta pra login
+    window.location.href = "../login/login.html";
+  }
+
+  // botão logout
+  document.getElementById("btnLogout").addEventListener("click", function() {
+    if (!confirm("Deseja realmente sair?")) return;
+    localStorage.removeItem("logado");
+    localStorage.removeItem("usuarioLogado");
+    window.location.href = "../login/login.html";
+  });
+
   // ====== DADOS INICIAIS ======
   let colaboradores = JSON.parse(localStorage.getItem("colaboradores")) || [];
   let ordemAsc = true;
 
-  // Util: read field safely (supports carga or cargaHoraria)
   function getCarga(colab) {
     if (colab.carga) return colab.carga;
     if (colab.cargaHoraria) return colab.cargaHoraria;
@@ -112,7 +128,7 @@
         <td>${colab.contratacao || "-"}</td>
         <td>${colab.setor || "-"}</td>
         <td>${carga}</td>
-        <td>${colab.ativo || "-"}</td>
+        <td>${colab.status || colab.ativo || "-"}</td>
         <td>
           <div class="small-gap">
             <button class="btn btn-warning btn-sm" onclick="editar(${i})">Editar</button>
@@ -143,8 +159,8 @@
   // ====== ORDENAR ======
   function ordenar(campo) {
     colaboradores.sort((a,b) => {
-      const A = (a[campo] || "").toString().toLowerCase();
-      const B = (b[campo] || "").toString().toLowerCase();
+      const A = (a[campo] || a[campo] === 0 ? (a[campo] || "") : (a[campo] || "")).toString().toLowerCase();
+      const B = (b[campo] || b[campo] === 0 ? (b[campo] || "") : (b[campo] || "")).toString().toLowerCase();
       if (A < B) return ordemAsc ? -1 : 1;
       if (A > B) return ordemAsc ? 1 : -1;
       return 0;
@@ -155,8 +171,7 @@
 
   // ====== EDITAR ======
   function editar(i) {
-    // redireciona para cadastro com id
-    window.location.href = `../cadastro/cadastro.html?id=${i}`;
+    window.location.href = "../pagina-registro/cadastro.html?id=" + i;
   }
 
   // ====== EXCLUIR ======
@@ -172,7 +187,6 @@
     const c = colaboradores[i];
     if (!c) return;
 
-    // Preencher modal (uso coalescência para evitar undefined)
     document.getElementById("statusNome").innerText = c.nome || "-";
     document.getElementById("statusCPF").innerText = c.cpf || "-";
     document.getElementById("statusEmail").innerText = c.email || "-";
@@ -181,9 +195,8 @@
     document.getElementById("statusContratacao").innerText = c.contratacao || "-";
     document.getElementById("statusSetor").innerText = c.setor || "-";
     document.getElementById("statusCarga").innerText = getCarga(c);
-    document.getElementById("statusSituacao").innerText = c.ativo || "-";
+    document.getElementById("statusSituacao").innerText = c.status || c.ativo || "-";
 
-    // Exibe modal (Bootstrap 5)
     const modalEl = document.getElementById("modalStatus");
     const modal = new bootstrap.Modal(modalEl);
     modal.show();
@@ -191,7 +204,6 @@
 
   // Inicializa listagem
   listar();
-
   </script>
 </body>
 </html>
